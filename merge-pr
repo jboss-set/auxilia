@@ -1,4 +1,22 @@
 #!/bin/sh
+#
+# This script expects:
+#
+# 0. jq commandline JSON processor, see https://stedolan.github.io/jq
+#
+# 1. .netrc with configuration as follows:
+#    machine    api.github.com
+#    login    UID
+#    password    ACCESS_TOKEN
+#
+# 2. Remote URLs in your jboss-eap clone using git protocol instead of https, ie. something like:
+#    origin    git@github.com:istudens/jboss-eap7.git (fetch)
+#    origin    git@github.com:istudens/jboss-eap7.git (push)
+#    upstream    git@github.com:jbossas/jboss-eap7.git (fetch)
+#    upstream    git@github.com:jbossas/jboss-eap7.git (push)
+#
+# 3. In case of remotes like above, the first parameter should be 'upstream' and the second parameter should be a number of PR being merged.
+#
 set -e
 if [ $# != 2 ]; then
     echo 1>&2 "Usage: $0 <remote> <pr>"
