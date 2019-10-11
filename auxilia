@@ -74,7 +74,7 @@ fi
 echo "Merging ${PR} from ${REMOTE} onto ${BRANCH}"
 readonly FETCH_URL=$(git remote -v | grep "${REMOTE}" | grep 'fetch' | cut -f2 | cut -d" " -f1)
 readonly OWNER=$(echo "${FETCH_URL}" | cut -d: -f2 | cut -d/ -f1)
-readonly REPO=$(echo "${FETCH_URL}" | cut -d: -f2 | cut -d/ -f2)
+readonly REPO=$(echo "${FETCH_URL}" | cut -d: -f2 | cut -d/ -f2 | cut -f1 -d. )
 readonly PR_GITHUB_API_URL="https://api.github.com/repos/${OWNER}/${REPO}/pulls/${PR}"
 set -e
 echo -n "Retrieving PR information from ${PR_GITHUB_API_URL}..."
