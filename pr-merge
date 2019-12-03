@@ -26,11 +26,12 @@ usage() {
 }
 
 isNetrcPresent() {
-  echo todo
-}
+  local netrc_file=${1:-"${HOME}/.netrc"}
 
-checkEapRemotes() {
-  echo todo
+  if [ ! -e "${netrc_file}" -o ! -r "${netrc_file}" ] ; then
+    echo "Missing configuration file ${netrc_file} - required by CuRL to authentificate against Github."
+    exit 4
+  fi
 }
 
 isJqInstalled() {
@@ -44,7 +45,6 @@ isJqInstalled() {
 sanity_check() {
   isJqInstalled
   isNetrcPresent
-  checkEapRemotes
 }
 
 sanity_check
