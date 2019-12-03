@@ -24,7 +24,7 @@ readonly JBOSS_EAP_WORKSPACE=${JBOSS_EAP_WORKSPACE:-$(pwd)}
 
 if [ ! -e "${JBOSS_EAP_WORKSPACE}"  -a ! -d "${JBOSS_EAP_WORKSPACE}" ]; then
   echo "The provided JBOSS_EAP_WORKSPACE does not exists or is not a directory: ${JBOSS_EAP_WORKSPACE}"
-  echo 'Please provide the appropriate path (or cd to the workspace.'
+  echo 'Please provide the appropriate path (or cd to the workspace).'
   usage
   exit 3
 fi
