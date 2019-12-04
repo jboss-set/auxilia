@@ -88,7 +88,7 @@ set +e
 
 readonly MSG="Merge pull request #${PR_ID} from $(echo ${PULL} | jq -r .head.label) $(echo $PULL | jq -r .title)"
 echo "Git commit message will be: ${MSG}"
-#echo -n "Continue..." && read _
+echo -n "Continue..." && read _
 set -x
 git fetch "${REMOTE}" "pull/${PR_ID}/head"
 git merge --no-ff -m "${MSG}" 'FETCH_HEAD'
