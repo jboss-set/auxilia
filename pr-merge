@@ -77,13 +77,23 @@ if [ -z "${FETCH_URL}" ]; then
   echo "Unable to retrieve remote fetch URL from ${REMOTE}."
   exit 4
 fi
-readonly OWNER=$(echo "${FETCH_URL}" | cut -d: -f2 | cut -d/ -f1)
-readonly REPO=$(echo "${FETCH_URL}" | cut -d: -f2 | cut -d/ -f2 | cut -f1 -d. )
+
+# replace all slashes with colons to keep delimiter consistent
+readonly URL_PARSE=$(echo "${FETCH_URL}" | sed "s/\//:/g")
+readonly REPO_PART="${URL_PARSE##*:}"
+readonly REPO=$(echo "${REPO_PART}" | sed "s/.git//")
+readonly URL_LEFT=$(echo "${URL_PARSE}" |sed "s/:${REPO_PART}//")
+readonly OWNER="${URL_LEFT##*:}"
+
+if [ -z "${OWNER}" -o -z "${REPO}" ]; then
+  echo "Unable to parse owner and repo from ${FETCH_URL}"
+  exit 4
+fi
 readonly PR_GITHUB_API_URL="https://api.github.com/repos/${OWNER}/${REPO}/pulls/${PR_ID}"
 set -e
 echo -n "Retrieving PR information from ${PR_GITHUB_API_URL}..."
 readonly PULL=$(curl -s -n ${PR_GITHUB_API_URL})
-if [ "${?}" -ne 0 ]; then
+if [ "${?}" -ne 0 -o "$(echo ${PULL}|grep 'Not Found')" != "" ]; then
   echo "Failed."
   exit 2
 fi
