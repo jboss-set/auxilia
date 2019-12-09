@@ -74,7 +74,11 @@ fi
 echo "Merging ${PR_ID} from ${REMOTE} onto ${BRANCH}"
 readonly FETCH_URL=$(git remote -v | grep "^${REMOTE}[ ]*" | grep 'fetch' | cut -f2 | cut -d" " -f1)
 if [ -z "${FETCH_URL}" ]; then
+  usage
   echo "Unable to retrieve remote fetch URL from ${REMOTE}."
+  echo ''
+  echo 'Available remotes in your repository are:'
+  git remote -v
   exit 4
 fi
 
