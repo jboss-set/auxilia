@@ -4,6 +4,16 @@ usage() {
   echo TODO
 }
 
+sed_edit_file_if_exists() {
+  local file=${1}
+  local sed_query=${2}
+  if [ -e "${file}" ]; then
+    sed -i "${file}" -e "${sed_query}"
+  else
+    echo "Warning: No such file ${file}."
+  fi
+}
+
 readonly VERSION_SUFFIX=${VERSION_SUFFIX:-'.GA-redhat-SNAPSHOT'}
 readonly PREVIOUS_VERSION=${1}
 readonly NEXT_VERSION=${2}
@@ -40,9 +50,11 @@ echo 'Done.'
 
 readonly PRODUCT_POM=${PRODUCT_POM:-'./pom.xml'}
 readonly PRODUCT_VERSION_TXT=${PRODUCT_VERSION_TXT:-'feature-pack/src/main/resources/content/version.txt'}
+readonly GALLEON_PACK_PRODUCT_VERSION_TXT=${GALLEON_PACK_PRODUCT_VERSION_TXT:-'galleon-pack/src/main/resources/packages/version.txt/content/version.txt'}
 readonly PRODUCT_VERSION="${NEXT_VERSION}.GA"
 
 echo -n "Update ${PRODUCT_POM} and ${PRODUCT_VERSION_TXT} to ${PRODUCT_VERSION}..."
-sed -i "${PRODUCT_POM}" -e "s;\(<product.release.version>\)[^<]*\(.*$\);\1${PRODUCT_VERSION}\2;"
-sed -i "${PRODUCT_VERSION_TXT}" -e "s;\(^.* Version \).*;\1${PRODUCT_VERSION};"
+sed_edit_file_if_exists "${PRODUCT_POM}" "s;\(<product.release.version>\)[^<]*\(.*$\);\1${PRODUCT_VERSION}\2;"
+sed_edit_file_if_exists "${PRODUCT_VERSION_TXT}" "s;\(^.* Version \).*;\1${PRODUCT_VERSION};"
+sed_edit_file_if_exists "${GALLEON_PACK_PRODUCT_VERSION_TXT}" "s;\(^.* Version \).*;\1${PRODUCT_VERSION};"
 echo 'Done.'
