@@ -44,7 +44,7 @@ readonly PRODOCT_VERSION_ALT_TXT=${PRODOCT_VERSION_ALT_TXT:-'galleon-pack/src/ma
 readonly PRODUCT_VERSION="${NEXT_VERSION}.GA"
 
 echo -n "Update ${PRODUCT_POM} and ${PRODUCT_VERSION_TXT} to ${PRODUCT_VERSION}..."
-sed -i "${PRODUCT_POM}" -e "s;\(<product.release.version>\)[^<]*\(.*$\);\1${PRODUCT_VERSION}\2;"
+sed -i "${PRODUCT_POM}" -e "s;\(<full.dist.product.release.version>\)[^<]*\(.*$\);\1${PRODUCT_VERSION}\2;"
 sed -i "${PRODUCT_VERSION_TXT}" -e "s;\(^.* Version \).*;\1${PRODUCT_VERSION};"
 sed -i "${PRODOCT_VERSION_ALT_TXT}" -e "s;\(Red Hat JBoss Enterprise Application Platform - Version \).*;\1${PRODUCT_VERSION};"
 echo 'Done.'
