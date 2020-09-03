@@ -42,7 +42,7 @@ readonly PRODUCT_POM=${PRODUCT_POM:-'./pom.xml'}
 readonly PRODUCT_VERSION_TXT=${PRODUCT_VERSION_TXT:-'feature-pack/src/main/resources/content/version.txt'}
 readonly PRODOCT_VERSION_ALT_TXT=${PRODOCT_VERSION_ALT_TXT:-'galleon-pack/src/main/resources/packages/version.txt/content/version.txt'}
 readonly PRODUCT_VERSION="${NEXT_VERSION}.GA"
-readonly XP_MINOR_VERSION=$(echo $NEXT_VERSION | sed -e "s/.*\.\(.*\)$/\1/")
+readonly XP_MINOR_VERSION=$(echo "${NEXT_VERSION}" | sed -e "s/.*\.\(.*\)$/\1/")
 readonly XP_PRODUCT_VERSION="1.0.$( expr "${XP_MINOR_VERSION}" - 1 ).GA"
 
 echo -n "Update ${PRODUCT_POM} and ${PRODUCT_VERSION_TXT} to ${PRODUCT_VERSION}..."
