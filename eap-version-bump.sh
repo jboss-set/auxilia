@@ -67,6 +67,7 @@ echo -n "Update ${PRODUCT_POM} and ${PRODUCT_VERSION_TXT} to ${PRODUCT_VERSION}.
 sed -i "${PRODUCT_POM}" -e "s;\(<full.dist.product.release.version>\)[^<]*\(.*$\);\1${PRODUCT_VERSION}\2;"
 sed -i "${PRODUCT_VERSION_TXT}" -e "s;\(^.* Version \).*;\1${PRODUCT_VERSION};"
 sed -i "${PRODUCT_VERSION_ALT_TXT}" -e "s;\(Red Hat JBoss Enterprise Application Platform - Version \).*;\1${PRODUCT_VERSION};"
+echo 'Done.'
 
 echo -n "Update ${PRODUCT_POM} to XP version ${XP_PRODUCT_VERSION}..."
 sed -i "${PRODUCT_POM}" -e "s;\(<expansion.pack.release.version>\)[^<]*\(.*$\);\1${NEXT_XP_VERSION}\2;"
