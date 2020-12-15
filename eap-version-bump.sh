@@ -4,6 +4,21 @@ usage() {
   echo TODO
 }
 
+editFileIfExistWithSED() {
+  local file="${1}"
+  local query="${2}"
+  local statusIfFileMissing="${3:-1}"
+
+  if [ -e "${file}" ]; then
+    sed -i "${file}" -e "${query}"
+  else
+    if [ "${statusIfFileMissing}" -ne 0 ]; then
+      echo "There is no such file '${file}'"
+      exit "${statusIfFileMissing}"
+    fi
+  fi
+}
+
 readonly VERSION_SUFFIX=${VERSION_SUFFIX:-'.GA-redhat-SNAPSHOT'}
 PREVIOUS_VERSION=${1}
 NEXT_VERSION=${2}
@@ -42,14 +57,14 @@ fi
 
 readonly JBOSS_EAP_WORKSPACE=${JBOSS_EAP_WORKSPACE:-$(pwd)}
 
-if [ ! -e "${JBOSS_EAP_WORKSPACE}"  -a ! -d "${JBOSS_EAP_WORKSPACE}" ]; then
+if [ ! -e "${JBOSS_EAP_WORKSPACE}" ] && [ ! -d "${JBOSS_EAP_WORKSPACE}" ]; then
   echo "The provided JBOSS_EAP_WORKSPACE does not exists or is not a directory: ${JBOSS_EAP_WORKSPACE}"
   echo 'Please provide the appropriate path (or cd to the workspace).'
   usage
   exit 3
 fi
 
-cd "${JBOSS_EAP_WORKSPACE}" > /dev/null
+cd "${JBOSS_EAP_WORKSPACE}" > /dev/null || exit
 
 readonly FROM="${PREVIOUS_VERSION}${VERSION_SUFFIX}"
 readonly TO="${NEXT_VERSION}${VERSION_SUFFIX}"
@@ -60,24 +75,18 @@ echo 'Done.'
 
 readonly PRODUCT_POM=${PRODUCT_POM:-'./pom.xml'}
 readonly PRODUCT_VERSION="${NEXT_VERSION}.GA"
-readonly XP_MINOR_VERSION=$(echo "${NEXT_VERSION}" | sed -e "s/.*\.\(.*\)$/\1/")
+readonly XP_MINOR_VERSION="${NEXT_VERSION##*.}"
 readonly XP_PRODUCT_VERSION="1.0.$( expr "${XP_MINOR_VERSION}" - 1 ).GA"
 
 echo -n "Update ${PRODUCT_POM} and ${PRODUCT_VERSION_TXT} to ${PRODUCT_VERSION}..."
-sed -i "${PRODUCT_POM}" -e "s;\(<full.dist.product.release.version>\)[^<]*\(.*$\);\1${PRODUCT_VERSION}\2;"
-sed -i "${PRODUCT_VERSION_TXT}" -e "s;\(^.* Version \).*;\1${PRODUCT_VERSION};"
+editFileIfExistWithSED "${PRODUCT_POM}" "s;\(<full.dist.product.release.version>\)[^<]*\(.*$\);\1${PRODUCT_VERSION}\2;"
+editFileIfExistWithSED "${PRODUCT_VERSION_TXT}" "s;\(^.* Version \).*;\1${PRODUCT_VERSION};"
+editFileIfExistWithSED "${PRODUCT_VERSION_ALT_TXT}" "s;\(Red Hat JBoss Enterprise Application Platform - Version \).*;\1${PRODUCT_VERSION};" 0
 echo 'Done.'
-if [ -e "${PRODUCT_VERSION_ALT_TXT}" ]; then
-  echo -n "Update ${PRODUCT_VERSION_ALT_TXT} to ${PRODUCT_VERSION}..."
-  sed -i "${PRODUCT_VERSION_ALT_TXT}" -e "s;\(Red Hat JBoss Enterprise Application Platform - Version \).*;\1${PRODUCT_VERSION};"
-  echo 'Done.'
-else
-  echo "Please note that there is no such file '${PRODUCT_VERSION_ALT_TXT}'"
-fi
 
 echo -n "Update ${PRODUCT_POM} to XP version ${XP_PRODUCT_VERSION}..."
-sed -i "${PRODUCT_POM}" -e "s;\(<expansion.pack.release.version>\)[^<]*\(.*$\);\1${NEXT_XP_VERSION}\2;"
+editFileIfExistWithSED "${PRODUCT_POM}" "s;\(<expansion.pack.release.version>\)[^<]*\(.*$\);\1${NEXT_XP_VERSION}\2;"
 echo 'Done.'
 echo -n "Update ${PRODUCT_POM} to XP version ${XP_PRODUCT_VERSION}..."
-sed -i "${PRODUCT_POM}" -e "s;\(<expansion.pack.release.version>\)[^<]*\(.*$\);\1${XP_PRODUCT_VERSION}\2;"
+editFileIfExistWithSED "${PRODUCT_POM}" "s;\(<expansion.pack.release.version>\)[^<]*\(.*$\);\1${XP_PRODUCT_VERSION}\2;"
 echo 'Done.'
