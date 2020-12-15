@@ -57,14 +57,14 @@ fi
 
 readonly JBOSS_EAP_WORKSPACE=${JBOSS_EAP_WORKSPACE:-$(pwd)}
 
-if [ ! -e "${JBOSS_EAP_WORKSPACE}"  -a ! -d "${JBOSS_EAP_WORKSPACE}" ]; then
+if [ ! -e "${JBOSS_EAP_WORKSPACE}" ] && [ ! -d "${JBOSS_EAP_WORKSPACE}" ]; then
   echo "The provided JBOSS_EAP_WORKSPACE does not exists or is not a directory: ${JBOSS_EAP_WORKSPACE}"
   echo 'Please provide the appropriate path (or cd to the workspace).'
   usage
   exit 3
 fi
 
-cd "${JBOSS_EAP_WORKSPACE}" > /dev/null
+cd "${JBOSS_EAP_WORKSPACE}" > /dev/null || exit
 
 readonly FROM="${PREVIOUS_VERSION}${VERSION_SUFFIX}"
 readonly TO="${NEXT_VERSION}${VERSION_SUFFIX}"
@@ -75,7 +75,7 @@ echo 'Done.'
 
 readonly PRODUCT_POM=${PRODUCT_POM:-'./pom.xml'}
 readonly PRODUCT_VERSION="${NEXT_VERSION}.GA"
-readonly XP_MINOR_VERSION=$(echo "${NEXT_VERSION}" | sed -e "s/.*\.\(.*\)$/\1/")
+readonly XP_MINOR_VERSION="${NEXT_VERSION##*.}"
 readonly XP_PRODUCT_VERSION="1.0.$( expr "${XP_MINOR_VERSION}" - 1 ).GA"
 
 echo -n "Update ${PRODUCT_POM} and ${PRODUCT_VERSION_TXT} to ${PRODUCT_VERSION}..."
