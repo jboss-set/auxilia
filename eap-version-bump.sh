@@ -25,7 +25,19 @@ NEXT_VERSION=${2}
 PREVIOUS_XP_VERSION=${3}
 NEXT_XP_VERSION=${4}
 
-readonly PRODUCT_VERSION_TXT=${PRODUCT_VERSION_TXT:-'feature-pack/src/main/resources/content/version.txt'}
+readonly FEATURE_PACK_VERSION_FILE='feature-pack/src/main/resources/content/version.txt'
+readonly EE_FEATURE_PACK_VERSION_FILE='ee-feature-pack/common/src/main/resources/content/version.txt'
+
+if [ -e "${FEATURE_PACK_VERSION_FILE}" ]; then
+  readonly PRODUCT_VERSION_TXT=${FEATURE_PACK_VERSION_FILE}
+elif [ -e "${EE_FEATURE_PACK_VERSION_FILE}" ]; then
+  readonly PRODUCT_VERSION_TXT=${EE_FEATURE_PACK_VERSION_FILE}
+else
+  echo 'current EAP version is not found from config file version.txt - aborting.'
+  usage
+  exit 1
+fi
+
 readonly PRODUCT_VERSION_ALT_TXT=${PRODUCT_VERSION_ALT_TXT:-'galleon-pack/src/main/resources/packages/version.txt/content/version.txt'}
 readonly PRODUCT_VERSION_REGEXP='Red Hat JBoss Enterprise Application Platform - Version (.*)'
 CURRENT_PRODUCT_VERSION=$(cat "${PRODUCT_VERSION_TXT}")
