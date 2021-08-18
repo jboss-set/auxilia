@@ -110,6 +110,6 @@ echo "Git commit message will be: ${MSG}"
 if [ -z "${NO_STOP_BEFORE_MERGE}" ] ; then
   echo -n "Continue..." && read _
 fi
-set -x
+set -ex
 git fetch "${REMOTE}" "pull/${PR_ID}/head"
 git merge --no-ff -m "${MSG}" 'FETCH_HEAD'
