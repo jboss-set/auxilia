@@ -113,7 +113,7 @@ fi
 set -x
 git fetch "${REMOTE}" "pull/${PR_ID}/head" 2>&1
 if [ "${?}" -ne 0 ]; then
-  echo "Failed to fetch PR"
+  echo "Failed to fetch PR #${PR_ID}"
   exit 2
 fi
-git merge --no-ff -m "${MSG}" 'FETCH_HEAD'
+git merge --no-ff -m "${MSG}" 'FETCH_HEAD' 2>&1
