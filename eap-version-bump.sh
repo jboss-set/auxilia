@@ -11,9 +11,14 @@ PREVIOUS_XP_VERSION=${3}
 NEXT_XP_VERSION=${4}
 
 readonly PRODUCT_VERSION_TXT=${PRODUCT_VERSION_TXT:-'feature-pack/src/main/resources/content/version.txt'}
+readonly PRODUCT_VERSION_EE_TXT=${PRODUCT_VERSION_EE_TXT:-'ee-feature-pack/common/src/main/resources/content/version.txt'}
 readonly PRODUCT_VERSION_ALT_TXT=${PRODUCT_VERSION_ALT_TXT:-'galleon-pack/src/main/resources/packages/version.txt/content/version.txt'}
 readonly PRODUCT_VERSION_REGEXP='Red Hat JBoss Enterprise Application Platform - Version (.*)'
-CURRENT_PRODUCT_VERSION=$(cat "${PRODUCT_VERSION_TXT}")
+if [ -e "${PRODUCT_VERSION_TXT}" ]; then
+  CURRENT_PRODUCT_VERSION=$(cat "${PRODUCT_VERSION_TXT}")
+elif [ -e "${PRODUCT_VERSION_EE_TXT}" ]; then
+  CURRENT_PRODUCT_VERSION=$(cat "${PRODUCT_VERSION_EE_TXT}")
+fi
 
 if [[ "${CURRENT_PRODUCT_VERSION}" =~ ${PRODUCT_VERSION_REGEXP} ]]; then
   version="${BASH_REMATCH[1]}"
@@ -63,10 +68,22 @@ readonly PRODUCT_VERSION="${NEXT_VERSION}.GA"
 readonly XP_MINOR_VERSION=$(echo "${NEXT_VERSION}" | sed -e "s/.*\.\(.*\)$/\1/")
 readonly XP_PRODUCT_VERSION="1.0.$( expr "${XP_MINOR_VERSION}" - 1 ).GA"
 
-echo -n "Update ${PRODUCT_POM} and ${PRODUCT_VERSION_TXT} to ${PRODUCT_VERSION}..."
+echo -n "Update ${PRODUCT_POM} to ${PRODUCT_VERSION}..."
 sed -i "${PRODUCT_POM}" -e "s;\(<full.dist.product.release.version>\)[^<]*\(.*$\);\1${PRODUCT_VERSION}\2;"
-sed -i "${PRODUCT_VERSION_TXT}" -e "s;\(^.* Version \).*;\1${PRODUCT_VERSION};"
-echo 'Done.'
+if [ -e "${PRODUCT_VERSION_TXT}" ]; then
+  echo -n "Update ${PRODUCT_VERSION_TXT} to ${PRODUCT_VERSION}..."
+  sed -i "${PRODUCT_VERSION_TXT}" -e "s;\(Red Hat JBoss Enterprise Application Platform - Version \).*;\1${PRODUCT_VERSION};"
+  echo 'Done.'
+else
+  echo "Please note that there is no such file '${PRODUCT_VERSION_TXT}'"
+fi
+if [ -e "${PRODUCT_VERSION_EE_TXT}" ]; then
+  echo -n "Update ${PRODUCT_VERSION_EE_TXT} to ${PRODUCT_VERSION}..."
+  sed -i "${PRODUCT_VERSION_EE_TXT}" -e "s;\(Red Hat JBoss Enterprise Application Platform - Version \).*;\1${PRODUCT_VERSION};"
+  echo 'Done.'
+else
+  echo "Please note that there is no such file '${PRODUCT_VERSION_EE_TXT}'"
+fi
 if [ -e "${PRODUCT_VERSION_ALT_TXT}" ]; then
   echo -n "Update ${PRODUCT_VERSION_ALT_TXT} to ${PRODUCT_VERSION}..."
   sed -i "${PRODUCT_VERSION_ALT_TXT}" -e "s;\(Red Hat JBoss Enterprise Application Platform - Version \).*;\1${PRODUCT_VERSION};"
