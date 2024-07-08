@@ -42,9 +42,27 @@ isJqInstalled() {
   fi
 }
 
+isHubInstalled() {
+  which hub &> /dev/null
+  if [  "${?}" != 0 ]; then
+    echo "The hub commandline tool is not installed. Using curl."
+    false
+  fi
+}
+
+apiCommand() {
+  if [ isHubInstalled ]; then
+    hub api "${1}"
+  else
+    curl -L -s -n "${1}"
+  fi
+}
+
 sanity_check() {
   isJqInstalled
-  isNetrcPresent
+  if [ ! isHubInstalled ]; then
+    isNetrcPresent
+  fi
 }
 
 sanity_check
@@ -94,11 +112,13 @@ if [ -z "${OWNER}" -o -z "${REPO}" ]; then
   exit 4
 fi
 readonly PR_GITHUB_API_URL="https://api.github.com/repos/${OWNER}/${REPO}/pulls/${PR_ID}"
+readonly PULL=$(apiCommand "${PR_GITHUB_API_URL}")
 set -e
-echo -n "Retrieving PR information from ${PR_GITHUB_API_URL}..."
-readonly PULL=$(curl -L -s -n ${PR_GITHUB_API_URL})
-if [ "${?}" -ne 0 -o "$(echo ${PULL} | grep 'Not Found')" != "" ]; then
+echo -n "Retrieving PR information from ${PR_GITHUB_API_URL}... "
+if [ $(echo ${PULL} | jq .status) == '"404"' ]; then
   echo "Failed."
+  echo "GitHub response:"
+  echo "${PULL}"
   exit 2
 fi
 echo 'Done.'
