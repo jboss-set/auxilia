@@ -45,22 +45,39 @@ isJqInstalled() {
 isHubInstalled() {
   which hub &> /dev/null
   if [  "${?}" != 0 ]; then
-    echo "The hub commandline tool is not installed. Using curl."
+    echo "The hub commandline tool is not installed. Using curl." >&2
     false
   fi
 }
 
 apiCommand() {
-  if [ isHubInstalled ]; then
+  if isHubInstalled; then
     hub api "${1}"
   else
-    curl -L -s -n "${1}"
+    local url="$1"
+    local response_file=$(mktemp) # Temporary file for response body
+    local http_status
+
+    # Use curl to save response body and get HTTP status
+    http_status=$(curl -L -s -o "${response_file}" -w "%{http_code}" -n "${url}")
+
+    # Read the response body from the temporary file
+    local response_body=$(<"${response_file}")
+    rm -f "${response_file}" # Clean up temporary file
+
+    # Inject HTTP status into the JSON response if valid
+    if echo "${response_body}" | jq empty >/dev/null 2>&1; then
+      response_body=$(jq --argjson status "${http_status}" '. + {status: $status}' <<<"${response_body}")
+    fi
+
+    echo "${response_body}"
+
   fi
 }
 
 sanity_check() {
   isJqInstalled
-  if [ ! isHubInstalled ]; then
+  if ! isHubInstalled; then
     isNetrcPresent
   fi
 }
@@ -113,18 +130,18 @@ if [ -z "${OWNER}" -o -z "${REPO}" ]; then
 fi
 readonly PR_GITHUB_API_URL="https://api.github.com/repos/${OWNER}/${REPO}/pulls/${PR_ID}"
 readonly PULL=$(apiCommand "${PR_GITHUB_API_URL}")
+echo "${PULL}"
 set -e
 echo -n "Retrieving PR information from ${PR_GITHUB_API_URL}... "
-if [ $(echo ${PULL} | jq .status) == '"404"' ]; then
+
+if [ "$(echo "${PULL}" | jq '.status')" == "404" ]; then
   echo "Failed."
-  echo "GitHub response:"
-  echo "${PULL}"
   exit 2
 fi
 echo 'Done.'
 set +e
 
-readonly MSG="Merge pull request #${PR_ID} from $(echo ${PULL} | jq -r .head.label) $(echo $PULL | jq -r .title)"
+readonly MSG="Merge pull request #${PR_ID} from $(echo "${PULL}" | jq -r .head.label) $(echo "${PULL}" | jq -r .title)"
 echo "Git commit message will be: ${MSG}"
 if [ -z "${NO_STOP_BEFORE_MERGE}" ] ; then
   echo -n "Continue..." && read _
