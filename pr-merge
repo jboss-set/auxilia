@@ -66,8 +66,8 @@ apiCommand() {
     rm -f "${response_file}" # Clean up temporary file
 
     # Inject HTTP status into the JSON response if valid
-    if echo "${response_body}" | jq empty >/dev/null 2>&1; then
-      response_body=$(jq --argjson status "${http_status}" '. + {status: $status}' <<<"${response_body}")
+    if [ -n "$(echo "${response_body}" | tr -d '[:space:]')" ] && echo "${response_body}" | jq empty >/dev/null 2>&1; then
+      response_body=$(echo "${response_body}" | jq --argjson status "${http_status}" '. + {status: $status}')
     fi
 
     echo "${response_body}"
@@ -134,7 +134,7 @@ echo "${PULL}"
 set -e
 echo -n "Retrieving PR information from ${PR_GITHUB_API_URL}... "
 
-if [ "$(echo "${PULL}" | jq '.status')" == "404" ]; then
+if [ "$(echo "${PULL}" | jq '.status')" == '404' ]; then
   echo "Failed."
   exit 2
 fi
