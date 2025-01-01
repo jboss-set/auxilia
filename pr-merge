@@ -54,7 +54,7 @@ apiCommand() {
   if isHubInstalled; then
     hub api "${1}"
   else
-    local url="$1"
+    local url="${1}"
     local response_file=$(mktemp) # Temporary file for response body
     local http_status
 
